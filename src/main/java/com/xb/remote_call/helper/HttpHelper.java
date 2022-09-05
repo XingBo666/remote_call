@@ -7,12 +7,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @Author KAJ
@@ -25,7 +25,7 @@ public class HttpHelper {
 
     public static final String DEFAULT_REQUEST_METHOD = "POST";
 
-    public static String remoteInvoking(String requestUrl, String data, String contentType, String requestMethod) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
+    public static String remoteInvoking(String requestUrl, String data, String contentType, String requestMethod, Map<String, String> headers) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
 
         String result = "";
 
@@ -50,6 +50,7 @@ public class HttpHelper {
         httpURLConnection.setDoInput(true);
         httpURLConnection.setDoOutput(true);
 
+
         /* 使用Post请求时， 必须禁用缓存 */
         httpURLConnection.setRequestMethod(requestMethod);
         httpURLConnection.setUseCaches(false);
@@ -58,6 +59,10 @@ public class HttpHelper {
 
         /* 设置内容类型 */
         httpURLConnection.setRequestProperty("Content-Type", contentType);
+
+        /* 设置请求头信息 */
+        setHeaders(httpURLConnection, headers);
+
 
         httpURLConnection.connect();
 
@@ -87,10 +92,27 @@ public class HttpHelper {
         return result;
     }
 
+    /**
+     * @Author KAJ
+     * @Date 2022/9/4 8:29
+     * @Description //设置请求头信息
+     */
+    public static void setHeaders(HttpsURLConnection connection, Map<String, String> headers) {
+        if (headers == null || headers.isEmpty()) {
+            return;
+        }
+
+        Set<String> keySets = headers.keySet();
+
+        for (String s : keySets) {
+            connection.setRequestProperty(s, headers.get(s));
+        }
+    }
+
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
         String url = "https://api.savevip.cn/pdd/boutique?pageNo=1";
 
-        String s = remoteInvoking(url, null, null, "GET");
+        String s = remoteInvoking(url, null, null, "GET", null);
 
         System.out.println(s);
     }

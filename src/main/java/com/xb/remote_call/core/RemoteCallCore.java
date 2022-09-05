@@ -1,14 +1,21 @@
 package com.xb.remote_call.core;
 
 
+import com.alibaba.fastjson.JSON;
 import com.xb.remote_call.ability.Encryption;
 import com.xb.remote_call.ability.Header;
 import com.xb.remote_call.annotation.JsonIgnore;
 import com.xb.remote_call.exception.CommonParamCheckFailException;
 import com.xb.remote_call.exception.RemoteCallException;
+import com.xb.remote_call.helper.HttpHelper;
 import com.xb.remote_call.helper.ObjectHelper;
+import com.xb.remote_call.helper.RequestHelper;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Map;
 
 /**
@@ -31,17 +38,17 @@ public abstract class RemoteCallCore implements Header, Encryption {
      */
 
     /* 是否序列化空白的字符串 */
-    private boolean serializeBlankChar = true;
+    protected boolean serializeBlankChar = true;
 
 
     /**
      * 请求头
      */
-    private Map<String, Object> headers;
+    protected Map<String, String> headers;
 
-    private Map<String, Object> getParams;
+    protected Map<String, Object> getParams;
 
-    private Map<String, Object> postParams;
+    protected Map<String, Object> postParams;
 
     /** 定义公共的一些参数 **/
 
@@ -49,26 +56,34 @@ public abstract class RemoteCallCore implements Header, Encryption {
      * 请求路径
      **/
     @JsonIgnore
-    private String REQUEST_URL;
+    protected String REQUEST_URL;
 
     /**
      * 内容类型
      */
     @JsonIgnore
-    private String CONTENT_TYPE;
+    protected String CONTENT_TYPE = "application/json;charset=utf-8";
 
     /**
      * 请求类型
      */
     @JsonIgnore
-    private String REQUEST_METHOD;
+    protected String REQUEST_METHOD;
 
 
-    public void sendMessage() throws RemoteCallException {
+    public <T> T sendMessage(Class<T> tClass) throws RemoteCallException, IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
         /* 校验请求头等信息 */
         this.checkCommonParams();
+        this.checkPrivateParams();
         /* 拼接请求路径 */
+        String requestUrl = RequestHelper.splicingRequestUrl(REQUEST_URL, getParams);
 
+        //  发送请求
+        String resultStr = HttpHelper.remoteInvoking(requestUrl, JSON.toJSONString(postParams), CONTENT_TYPE, REQUEST_METHOD, headers);
+
+        T parse = ObjectHelper.parse(resultStr, tClass);
+
+        return parse;
     }
 
     /**
