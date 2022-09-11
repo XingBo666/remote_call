@@ -3,11 +3,10 @@ package com.xb.remote_call;
 import com.alibaba.fastjson.JSONObject;
 import com.xb.remote_call.ability.SerializeChildren;
 import com.xb.remote_call.core.SimpleGetRequest;
+import com.xb.remote_call.core.SimplePostRequest;
 import com.xb.remote_call.exception.RemoteCallException;
 import com.xb.remote_call.helper.ObjectHelper;
-import com.xb.remote_call.test.SaveVipResponse;
-import com.xb.remote_call.test.Son;
-import com.xb.remote_call.test.User;
+import com.xb.remote_call.test.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,6 +55,20 @@ class RemoteCallApplicationTests {
         SaveVipResponse response = simpleGetRequest.get("https://api.savevip.cn/pdd/boutique?pageNo=1", SaveVipResponse.class);
 
         System.out.println(response.toString());
+    }
+
+    @Test
+    void test04() throws Exception {
+        /*SimplePostRequest request = new SimplePostRequest();
+        PddRequest param = new PddRequest(1, 10, "");
+        PddSearchResponse post = request.post("https://api.savevip.cn/pdd/search", param, PddSearchResponse.class);
+
+        System.out.println(JSONObject.toJSONString(post));*/
+
+        SimplePostRequest request = new SimplePostRequest();
+        JSONObject post = request.post("https://news.baidu.com/news?tn=bdapibaiyue&t=getuserdata", null, JSONObject.class);
+
+        System.out.printf(post.toString());
     }
 
 }

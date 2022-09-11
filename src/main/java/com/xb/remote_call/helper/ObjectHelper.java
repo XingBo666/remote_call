@@ -28,6 +28,11 @@ public class ObjectHelper {
         /* 创建一个用来存储结果集的map */
         Map<String, Object> result = new HashMap<>();
 
+        /* 传个空对象，返回空Map */
+        if (instance == null) {
+            return result;
+        }
+
         Class<?> instanceClass = instance.getClass();
 
         Field[] declaredFields = instanceClass.getDeclaredFields();

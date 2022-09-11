@@ -25,6 +25,7 @@ public class HttpHelper {
 
     public static final String DEFAULT_REQUEST_METHOD = "POST";
 
+    /* 执行远程调用 */
     public static String remoteInvoking(String requestUrl, String data, String contentType, String requestMethod, Map<String, String> headers) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
 
         String result = "";
@@ -92,6 +93,67 @@ public class HttpHelper {
         return result;
     }
 
+
+    /* 不校验SSL证书的远程调用 */
+    public static String remoteInvokingWithoutSSL(String requestUrl, String data, String contentType, String requestMethod, Map<String, String> headers) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
+
+        String result = "";
+
+        /* 设置默认参数 */
+        contentType = StringUtils.isBlank(contentType) ? DEFAULT_CONTENT_TYPE : contentType;
+        requestMethod = StringUtils.isBlank(requestMethod) ? DEFAULT_REQUEST_METHOD : requestMethod.toUpperCase();
+        data = StringUtils.isBlank(data) ? "{}" : data;
+
+        URL url = new URL(requestUrl);
+        HttpsURLConnection httpURLConnection = (HttpsURLConnection) url.openConnection();
+
+        /* 设置请求对象 */
+        httpURLConnection.setDoInput(true);
+        httpURLConnection.setDoOutput(true);
+
+
+        /* 使用Post请求时， 必须禁用缓存 */
+        httpURLConnection.setRequestMethod(requestMethod);
+        httpURLConnection.setUseCaches(false);
+
+        httpURLConnection.setInstanceFollowRedirects(true);
+
+        /* 设置内容类型 */
+        httpURLConnection.setRequestProperty("Content-Type", contentType);
+
+        /* 设置请求头信息 */
+        setHeaders(httpURLConnection, headers);
+
+
+        httpURLConnection.connect();
+
+        /* 通过输入流输入 */
+        if ("POST".equals(requestMethod)) {
+            DataOutputStream dos = new DataOutputStream(httpURLConnection.getOutputStream());
+            dos.write(data.getBytes("utf-8"));
+            dos.flush();
+            dos.close();
+        }
+
+
+        BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(httpURLConnection.getInputStream())
+        );
+
+        String b = "";
+        StringBuilder sb = new StringBuilder();
+        while ((b = bufferedReader.readLine()) != null) {
+            sb.append(b);
+        }
+
+        result = sb.toString();
+
+        bufferedReader.close();
+
+        return result;
+    }
+
+
     /**
      * @Author KAJ
      * @Date 2022/9/4 8:29
@@ -108,13 +170,4 @@ public class HttpHelper {
             connection.setRequestProperty(s, headers.get(s));
         }
     }
-
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
-        String url = "https://api.savevip.cn/pdd/boutique?pageNo=1";
-
-        String s = remoteInvoking(url, null, null, "GET", null);
-
-        System.out.println(s);
-    }
-
 }
